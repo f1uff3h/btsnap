@@ -1,0 +1,43 @@
+FROM docker.io/library/rust:latest as r
+
+RUN apt-get update && \
+  apt-get upgrade -y && \
+  apt-get install --no-install-recommends -y cmake && \
+  cargo install nu starship fd-find ripgrep zoxide
+
+FROM docker.io/library/debian:12-slim as n
+
+RUN apt-get update && \
+  apt-get upgrade -y && \
+  apt-get install -y git make cmake gettext && \
+  git clone https://github.com/neovim/neovim && \
+  mkdir /opt/neovim
+
+WORKDIR /neovim
+
+RUN make CMAKE_BUILD_TYPE=RelWithDebInfo CMAKE_INSTALL_PREFIX=/opt/neovim && \
+  make install
+
+FROM docker.io/library/golang:1.23
+
+RUN apt-get update && \
+  apt-get upgrade -y && \
+  apt-get install -y curl wget gpg git npm && \
+  git clone https://github.com/LazyVim/starter ~/.config/nvim && \
+  rm -rf ~/.config/nvim/.git
+
+COPY --from=r /usr/local/cargo/bin/* /usr/local/bin/
+COPY --from=n /opt/neovim/ /opt/neovim
+
+RUN ln -s /opt/neovim/bin/nvim /usr/local/bin/nvim
+
+RUN go install github.com/jesseduffield/lazygit@latest && \
+  go install github.com/junegunn/fzf@latest
+
+RUN cp /go/bin/* /usr/local/bin/
+
+COPY ./src/nushell/*.nu /root/.config/nushell/
+COPY ./src/nvim/lua/config/* /root/.config/nvim/lua/config/
+COPY ./src/nvim/lua/plugins/* /root/.config/nvim/lua/plugins/
+
+WORKDIR /workspace
