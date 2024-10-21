@@ -22,7 +22,7 @@ FROM docker.io/library/golang:1.23
 
 RUN apt-get update && \
   apt-get upgrade -y && \
-  apt-get install -y curl wget gpg git npm && \
+  apt-get install -y curl wget gpg git npm btrfs-progs && \
   git clone https://github.com/LazyVim/starter ~/.config/nvim && \
   rm -rf ~/.config/nvim/.git
 
@@ -39,5 +39,11 @@ RUN cp /go/bin/* /usr/local/bin/
 COPY ./src/nushell/*.nu /root/.config/nushell/
 COPY ./src/nvim/lua/config/* /root/.config/nvim/lua/config/
 COPY ./src/nvim/lua/plugins/* /root/.config/nvim/lua/plugins/
+COPY ./entrypoint.sh /entrypoint.sh
+
+RUN truncate -s1G /btrfs.img && \
+  mkfs.btrfs /btrfs.img && \
+  chmod +x /entrypoint.sh
 
 WORKDIR /workspace
+ENTRYPOINT [ "/entrypoint.sh" ]
