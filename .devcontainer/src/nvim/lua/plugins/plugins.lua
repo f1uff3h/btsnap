@@ -24,6 +24,26 @@ return {
 		end,
 	},
 	{
+		"folke/snacks.nvim",
+		opts = {
+			terminal = {
+				win = {
+					position = "top",
+					height = 0.25,
+				},
+			},
+		},
+		keys = {
+			{
+				"<C-S-/>",
+				function()
+					Snacks.terminal.toggle(nil, { win = { position = "float", height = 0.9, width = 0.9 } })
+				end,
+				desc = "Toggle Terminal",
+			},
+		},
+	},
+	{
 		"neovim/nvim-lspconfig",
 		opts = {
 			servers = {
@@ -39,5 +59,14 @@ return {
 				},
 			},
 		},
+	},
+	{
+		-- NOTE: something broke and char = "|" no longer works
+		"lukas-reineke/indent-blankline.nvim",
+		opts = function()
+			return {
+				indent = {},
+			}
+		end,
 	},
 }

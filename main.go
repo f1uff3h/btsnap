@@ -1,43 +1,73 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func usage() {
-	// TODO: add commands dynamically and print usage as expected per command
-	log.Println("Usage: btsnap <command> <arguments>")
+	fmt.Println(`Usage: 
+
+  btsnap [flags] <command> [flags] <arguments>
+
+Flags:
+
+  -h | --help    print this text
+
+Commands:
+
+  - shot  takes a snapshot of provided path`)
 }
 
-// func cmd() error {
-// 	argument := os.Args[2]
-//
-// 	if _, err := os.Stat(argument); os.IsNotExist(err) {
-// 		return fmt.Errorf("%s\n\n%s is not a valid filepath", usage(), argument)
-// 	} else if err != nil {
-// 		// TODO: test if filepath is part of BTRFS subvolume
-// 		return fmt.Errorf("unable to check filepath %s: %w", argument, err)
-// 	}
-//
-// 	return nil
-// }
-
-func main() {
+func run(args []string) error {
 	var err error
-	command := os.Args[1]
-	b := &btsnap{}
+
+	if len(args) < 2 {
+		usage()
+		return errors.New("No command provided")
+	}
+
+	if strings.HasPrefix(args[1], "-") {
+		flag := args[1]
+
+		switch flag {
+		case "-h", "--help":
+			usage()
+			return nil
+		default:
+			usage()
+			return fmt.Errorf("unknown flag %s", flag)
+		}
+	}
+
+	command := args[1]
+	b := newBt()
 
 	switch command {
 	case "shot":
-		err = b.shot()
+		if len(args) < 3 {
+			b.usage()
+			return errors.New("Missing path of volume to snapshot")
+		} else if len(args) < 4 {
+			b.usage()
+			return errors.New("Missing snapshot destination path")
+		}
+		if err = b.shot(args[2], args[3]); err != nil {
+			return err
+		}
 	default:
 		usage()
-		err = fmt.Errorf("unknown command: %s", command)
+		return fmt.Errorf("unknown command %s", command)
 	}
 
-	if err != nil {
+	return nil
+}
+
+func main() {
+	if err := run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

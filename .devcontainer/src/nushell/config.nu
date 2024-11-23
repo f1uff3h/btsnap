@@ -1,5 +1,5 @@
 $env.config = {
-    show_banner: false # true or false to enable or disable the welcome banner at startup
+    show_banner: false
 }
 
 def rmswap [] { fd -H .*.sw[p|o]$ $env.HOME | xargs -I{} rm -rf {}}
@@ -7,9 +7,8 @@ def rmswap [] { fd -H .*.sw[p|o]$ $env.HOME | xargs -I{} rm -rf {}}
 alias nv = nvim
 alias ll = ls -ls
 alias la = ls -la
-alias glog = git log --all --oneline --decorate --swap_graph
+alias glog = git log --all --oneline --decorate --graph
 alias gl = git log --all --oneline -n 10
-alias gd = git $"--git-dir=($env.HOME)/repos/.files" $"--work-tree=($env.HOME)"
 
 source ~/.cache/zoxide/init.nu
 use ~/.cache/starship/init.nu
